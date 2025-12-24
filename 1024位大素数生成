@@ -4,19 +4,19 @@
 #define LL long long
 //#define int long long
 int test1[30]={3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97};//第一轮小素数筛 
-int test2[10]={2,3,5,7,13,17,19};//检验用素数 
+int test2[15]={2,3,5,7,13,17,19,23,29,31,37};//检验用素数 
 struct big
 {
 	char s[1030];
 	int len;
 };
-struct big32
+struct big32//压位成32位 
 {
 	long long s[32];
 };
-struct big60//压位 
+struct big60//压位成60位 
 {
-	long long s[18];
+	long long s[18];//18*60+4=1024 
 }P;
 typedef struct big  big;
 typedef struct big32 big32;
@@ -42,7 +42,7 @@ void print32(big32 x)
 	printf("\n");
 }
 
-void echo1(big x)
+void echo1(big x)//输出在显示屏 
 {
 	for(int i=x.len-1;~i;i-=4)
 	{
@@ -56,7 +56,7 @@ void echo1(big x)
 	printf("\n");
 }
 
-void echo2(big x)//输出 
+void echo2(big x)//输出在显示屏和文件 
 {
 	FILE *fp;
 	fp=fopen("ans.txt","w");
@@ -95,10 +95,12 @@ int ck(big x)//第一轮筛
 	}
 	return 1;
 }
+
+
 static inline big mol (big x,big y)//1024位乘法，取模 
 {
 	big60 tx,tz;
-	for(int i=0;i<17;i++)
+	for(int i=0;i<17;i++)//压位成60位 
 	{
 		tx.s[i]=0;
 		for(int j=0;j<60;j++)
@@ -115,7 +117,7 @@ static inline big mol (big x,big y)//1024位乘法，取模
 	
 	for(int i=y.len-1;~i;i--)
 	{
-		for(int j=17;~j;j--) 
+		for(int j=17;~j;j--)//tz左移一位 
 		{
 			tz.s[j]<<=1;
 			if(j!=17&&(tz.s[j]&(1ll<<60)))
@@ -124,7 +126,7 @@ static inline big mol (big x,big y)//1024位乘法，取模
 				tz.s[j]^=(1ll<<60);
 			}
 		}
-		while(tz.s[17]&(1<<4))
+		while(tz.s[17]&(1<<4))//取模 控制在1024位 
 		{
 			for(int j=0;j<18;j++)
 			{
@@ -132,7 +134,7 @@ static inline big mol (big x,big y)//1024位乘法，取模
 				tz.s[j]-=P.s[j];
 			}
 		}
-		if(y.s[i])
+		if(y.s[i])//tz=tz+tx 
 		{
 			for(int j=0;j<18;j++)
 			{
@@ -144,7 +146,7 @@ static inline big mol (big x,big y)//1024位乘法，取模
 				}
 			}
 		}
-		if(tz.s[17]&(1<<4))
+		if(tz.s[17]&(1<<4))//取模  控制在1024位 
 		{
 			for(int j=0;j<18;j++)
 			{
@@ -153,7 +155,7 @@ static inline big mol (big x,big y)//1024位乘法，取模
 			}
 		}
 	}
-	int flow=0;
+	int flow=0;//取模 
 	for(int j=17;~j;j--)
 	{
 		if(tz.s[j]<P.s[j]) {flow=0;break;}
@@ -169,7 +171,7 @@ static inline big mol (big x,big y)//1024位乘法，取模
 	}
 	big z;
 	for(int i=0;i<1026;i++) z.s[i]=0;
-	for(int i=0;i<17;i++)
+	for(int i=0;i<17;i++)//解除压位，转成1024位 
 	{
 		for(int j=0;j<60;j++)
 		{
@@ -189,7 +191,7 @@ static inline big mol (big x,big y)//1024位乘法，取模
 }
 
 
-big Pow_B(int low,big y)
+big Pow_B(int low,big y)//快速幂 
 {
 	big x,res;int tot=0;
 	
@@ -203,7 +205,7 @@ big Pow_B(int low,big y)
 	x.len=tot;
 	
 	res.s[0]=1,res.len=1;
-	
+	//x=low,res=1 
 	up=0;	
 	
 	while(up<y.len)
@@ -224,7 +226,7 @@ _Bool qus_B(big p)//miller rabin
 {	
 	if(!ck(p)) return 0;
 	
-	big t=p;t.s[0]=0;big temp=t;//t=s-1 
+	big t=p;t.s[0]=0;big temp=t;//t==s-1 
 	
 	int k = 0; while(!t.s[k]) k++;
 	
@@ -246,14 +248,14 @@ _Bool qus_B(big p)//miller rabin
 	}
 	//P为模数
 	 
-	for(int i=0;i<5;i++)
+	for(int i=0;i<10;i++)//经过10次 
 	{
 		big a=Pow_B(test2[i],t);
 		big nxt=a;
 		for(int j=0;j<k;j++)
 		{
 			nxt=mol(a,a);
-			if((nxt.len==1&&nxt.s[0]==1))
+			if((nxt.len==1&&nxt.s[0]==1))//二次探测定理 若nxt==1，则a==1或-1 
 			{
 				if(!(a.len==1&&a.s[0]==1))//!=1
 				{
@@ -304,7 +306,7 @@ void work2()
 	clock_t start=clock();
 	int cnt=0;
 	big p;
-	while(cnt<1000)
+	while(cnt<2000)
 	{
 		cnt++;
 		p=Rand_B(); 
@@ -336,10 +338,16 @@ int main()
 				if(qus_B(p)) printf("此数为素数\n");
 				else printf("此数不为素数\n");
 			}
+			printf("\n");
+		}
+		else if(op==2) 
+		{
+			work2();
+			printf("\n");
 		}
 		else
 		{
-			work2();
+			printf("输入错误\n");
 		}
 		printf("请输入操作类型 ");
 		scanf("%d",&op); 
