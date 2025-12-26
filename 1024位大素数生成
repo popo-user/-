@@ -76,7 +76,7 @@ void echo2(big x)//输出在显示屏和文件
 int ck(big x)//第一轮筛 
 {
 	big32 tx;
-	for(int i=0;i<32;i++)
+	for(int i=0;i<32;i++)//压成32位，方便取模 
 	{
 		tx.s[i]=0;
 		for(int j=0;j<32;j++)
@@ -84,7 +84,7 @@ int ck(big x)//第一轮筛
 			if((i<<5|j)<x.len&&x.s[(i<<5)|j]) tx.s[i]|=(1ll<<j);
 		}
 	}
-	for(int k=0;k<24;k++)
+	for(int k=0;k<24;k++)//24个素数 
 	{
 		LL sum=0;
 		for(int i=31;~i;i--)
@@ -155,13 +155,13 @@ static inline big mol (big x,big y)//1024位乘法，取模
 			}
 		}
 	}
-	int flow=0;//取模 
-	for(int j=17;~j;j--)
+	int flow=0;
+	for(int j=17;~j;j--)//由于之前只是控制在1024位，还要判断是否需要取模 
 	{
 		if(tz.s[j]<P.s[j]) {flow=0;break;}
 		else if(tz.s[j]>P.s[j]) {flow=1;break;}
 	}
-	if(flow)
+	if(flow)//取模 
 	{
 		for(int j=0;j<18;j++)
 		{
@@ -310,9 +310,9 @@ void work2()
 	{
 		cnt++;
 		p=Rand_B(); 
-//		printf("%d ",cnt); 
 		if(qus_B(p)){echo2(p);break;}
 	} 
+//	printf("%d\n",cnt); 
 	clock_t end=clock();
 	double dur=(double)(end-start)/CLOCKS_PER_SEC;
 	printf("本次生成素数用时为%.2fs\n",dur);
@@ -349,7 +349,7 @@ int main()
 		{
 			printf("输入错误\n");
 		}
-		printf("请输入操作类型 ");
+		printf("请输入操作类型：");
 		scanf("%d",&op); 
 	}
 	
